@@ -49,7 +49,7 @@ window.addEventListener('resize', () => {
 });
 
 // Particles variables
-const particleCount = 120;
+const particleCount = window.innerWidth < 768 ? 50 : 120;
 const particles = [];
 const focusLength = 300;
 let mouseX = 0;
@@ -306,16 +306,125 @@ gsap.from('.timeline-item', {
 
 
 // ----------------------------------------------------
-// 5. Traveling Profile Scroll Animation (GSAP)
+// 5. Traveling Profile Scroll & Drag Setup (GSAP + Pointer)
 // ----------------------------------------------------
 const travelingProfile = document.getElementById('travelling-profile');
-const travelingBtn = travelingProfile.querySelector('.traveling-btn');
+const travelingBtn = travelingProfile ? travelingProfile.querySelector('.traveling-btn') : null;
+
+function initDraggableProfile(travelingProfile) {
+  const dragWrapper = travelingProfile.querySelector('.traveling-card-drag-wrapper');
+  if (!dragWrapper) return;
+
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
+  let dragX = 0;
+  let dragY = 0;
+  let startRect = null;
+  let currentScale = 1;
+
+  const onPointerDown = (e) => {
+    if (e.target.closest('.traveling-btn')) return;
+    
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    
+    startRect = travelingProfile.getBoundingClientRect();
+    
+    const designWidth = travelingProfile.offsetWidth || 250;
+    currentScale = startRect.width / designWidth;
+    
+    dragWrapper.setPointerCapture(e.pointerId);
+    travelingProfile.classList.add('is-dragging');
+    
+    if (typeof lenis !== 'undefined' && lenis.stop) {
+      lenis.stop();
+    }
+  };
+
+  const onPointerMove = (e) => {
+    if (!isDragging) return;
+    
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    
+    let targetLeft = startRect.left + dx;
+    let targetTop = startRect.top + dy;
+    
+    const minLeft = 10;
+    const maxLeft = window.innerWidth - startRect.width - 10;
+    const minTop = 80;
+    const maxTop = window.innerHeight - startRect.height - 10;
+    
+    if (targetLeft < minLeft) targetLeft = minLeft;
+    if (targetLeft > maxLeft) targetLeft = maxLeft;
+    if (targetTop < minTop) targetTop = minTop;
+    if (targetTop > maxTop) targetTop = maxTop;
+    
+    const finalDx = targetLeft - startRect.left;
+    const finalDy = targetTop - startRect.top;
+    
+    const currentTransformX = dragX + finalDx / currentScale;
+    const currentTransformY = dragY + finalDy / currentScale;
+    
+    dragWrapper.style.transform = `translate3d(${currentTransformX}px, ${currentTransformY}px, 0px)`;
+  };
+
+  const onPointerUp = (e) => {
+    if (!isDragging) return;
+    
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    
+    let targetLeft = startRect.left + dx;
+    let targetTop = startRect.top + dy;
+    
+    const minLeft = 10;
+    const maxLeft = window.innerWidth - startRect.width - 10;
+    const minTop = 80;
+    const maxTop = window.innerHeight - startRect.height - 10;
+    
+    if (targetLeft < minLeft) targetLeft = minLeft;
+    if (targetLeft > maxLeft) targetLeft = maxLeft;
+    if (targetTop < minTop) targetTop = minTop;
+    if (targetTop > maxTop) targetTop = maxTop;
+    
+    const finalDx = targetLeft - startRect.left;
+    const finalDy = targetTop - startRect.top;
+    
+    dragX = dragX + finalDx / currentScale;
+    dragY = dragY + finalDy / currentScale;
+    
+    isDragging = false;
+    dragWrapper.releasePointerCapture(e.pointerId);
+    travelingProfile.classList.remove('is-dragging');
+    
+    if (typeof lenis !== 'undefined' && lenis.start) {
+      lenis.start();
+    }
+  };
+
+  const onResize = () => {
+    dragX = 0;
+    dragY = 0;
+    dragWrapper.style.transform = 'translate3d(0px, 0px, 0px)';
+  };
+
+  dragWrapper.addEventListener('pointerdown', onPointerDown);
+  dragWrapper.addEventListener('pointermove', onPointerMove);
+  dragWrapper.addEventListener('pointerup', onPointerUp);
+  dragWrapper.addEventListener('pointercancel', onPointerUp);
+  window.addEventListener('resize', onResize);
+}
 
 if (travelingProfile) {
+  initDraggableProfile(travelingProfile);
+
   let mm = gsap.matchMedia();
 
+  // Desktop media query (min-width: 1025px)
   mm.add("(min-width: 1025px)", () => {
-    // Show traveling element and make sure static one behaves
     gsap.set(travelingProfile, { display: 'flex', opacity: 1 });
     
     const staticHeroCard = document.querySelector('.hero-visual .profile-card-3d');
@@ -324,7 +433,6 @@ if (travelingProfile) {
       staticHeroCard.style.pointerEvents = 'none';
     }
     
-    // Floating motion path along scroll with heavier inertia (scrub: 2.8) and responsive perspective rotations
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: 'body',
@@ -334,20 +442,17 @@ if (travelingProfile) {
       }
     });
     
-    // Movement path:
-    // Scroll 0%: Right side (fits hero, facing straight)
-    // Scroll 30% (About/Projects): Swings Left (tilting left: rotateY -24deg)
-    // Scroll 65% (Projects/Experience): Swings Right (tilting right: rotateY 24deg)
-    // Scroll 100% (Contact): Lands Left near details (facing straight)
     tl.fromTo(travelingProfile, {
       left: '65%',
       top: '25%',
+      xPercent: 0,
       scale: 1,
       rotateY: 0,
       rotateZ: 0,
     }, {
       left: '5%',
       top: '30%',
+      xPercent: 0,
       scale: 0.72,
       rotateY: -24,
       rotateZ: -2,
@@ -356,6 +461,7 @@ if (travelingProfile) {
     .to(travelingProfile, {
       left: '75%',
       top: '35%',
+      xPercent: 0,
       scale: 0.72,
       rotateY: 24,
       rotateZ: 2,
@@ -364,29 +470,116 @@ if (travelingProfile) {
     .to(travelingProfile, {
       left: '8%',
       top: '52%',
+      xPercent: 0,
       scale: 0.82,
       rotateY: 0,
       rotateZ: 0,
       duration: 1,
     });
 
-    // Floating button visibility threshold (hide during Hero, show when scrolling down)
-    ScrollTrigger.create({
-      trigger: '#home',
-      start: 'bottom 80%',
-      onEnter: () => travelingBtn.classList.add('visible'),
-      onLeaveBack: () => travelingBtn.classList.remove('visible'),
-    });
+    if (travelingBtn) {
+      ScrollTrigger.create({
+        trigger: '#home',
+        start: 'bottom 80%',
+        onEnter: () => travelingBtn.classList.add('visible'),
+        onLeaveBack: () => travelingBtn.classList.remove('visible'),
+      });
+    }
   });
 
+  // Mobile/Tablet media query (max-width: 1024px)
   mm.add("(max-width: 1024px)", () => {
-    // Hide traveling avatar on tablet/mobile screens
-    gsap.set(travelingProfile, { display: 'none' });
+    gsap.set(travelingProfile, { display: 'flex', opacity: 1 });
+    
     const staticHeroCard = document.querySelector('.hero-visual .profile-card-3d');
     if (staticHeroCard) {
-      staticHeroCard.style.opacity = '1';
-      staticHeroCard.style.pointerEvents = 'auto';
+      staticHeroCard.style.opacity = '0';
+      staticHeroCard.style.pointerEvents = 'none';
     }
+    
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: 'body',
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 2.2,
+      }
+    });
+    
+    // Bottom-anchored floating bubble path on mobile/tablet screens
+    tl.fromTo(travelingProfile, {
+      left: '50%',
+      top: '22%',
+      xPercent: -50,
+      scale: 1,
+      rotateY: 0,
+      rotateZ: 0,
+    }, {
+      left: '60%',
+      top: '75%',
+      xPercent: 0,
+      scale: 0.85,
+      rotateY: -15,
+      rotateZ: -1,
+      duration: 1,
+    })
+    .to(travelingProfile, {
+      left: '5%',
+      top: '75%',
+      xPercent: 0,
+      scale: 0.85,
+      rotateY: 15,
+      rotateZ: 1,
+      duration: 1,
+    })
+    .to(travelingProfile, {
+      left: '8%',
+      top: '78%',
+      xPercent: 0,
+      scale: 0.9,
+      rotateY: 0,
+      rotateZ: 0,
+      duration: 1,
+    });
+
+    if (travelingBtn) {
+      ScrollTrigger.create({
+        trigger: '#home',
+        start: 'bottom 80%',
+        onEnter: () => travelingBtn.classList.add('visible'),
+        onLeaveBack: () => travelingBtn.classList.remove('visible'),
+      });
+    }
+  });
+}
+
+// ----------------------------------------------------
+// Hamburger Mobile Menu Drawer Toggle
+// ----------------------------------------------------
+const hamburgerToggle = document.getElementById('hamburger-toggle');
+const navDrawer = document.querySelector('header nav');
+const navLinksList = document.querySelectorAll('header nav a');
+
+if (hamburgerToggle && navDrawer) {
+  hamburgerToggle.addEventListener('click', () => {
+    const isActive = hamburgerToggle.classList.toggle('active');
+    navDrawer.classList.toggle('active');
+    document.body.classList.toggle('menu-open');
+    
+    if (isActive) {
+      if (typeof lenis !== 'undefined' && lenis.stop) lenis.stop();
+    } else {
+      if (typeof lenis !== 'undefined' && lenis.start) lenis.start();
+    }
+  });
+
+  navLinksList.forEach((link) => {
+    link.addEventListener('click', () => {
+      hamburgerToggle.classList.remove('active');
+      navDrawer.classList.remove('active');
+      document.body.classList.remove('menu-open');
+      if (typeof lenis !== 'undefined' && lenis.start) lenis.start();
+    });
   });
 }
 
