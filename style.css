@@ -379,9 +379,25 @@ nav a.active {
 /* Profile Visual */
 .hero-visual {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
   position: relative;
   perspective: 1000px;
+}
+
+.hero-profile-name-under {
+  font-family: var(--font-headings);
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-top: 24px;
+  text-align: center;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #ffffff 10%, #a2a8b9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  z-index: 10;
 }
 
 .profile-card-3d {
