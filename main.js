@@ -185,7 +185,7 @@ sections.forEach((section) => {
 // Preloader completion trigger
 window.addEventListener('load', () => {
   const progressBar = document.querySelector('.preloader-progress');
-  
+
   // Speed up preloader animation on load
   gsap.to(progressBar, {
     width: '100%',
@@ -199,6 +199,8 @@ window.addEventListener('load', () => {
         onComplete: () => {
           document.getElementById('preloader').style.visibility = 'hidden';
           triggerHeroReveal();
+          // Recalculate ScrollTrigger heights
+          ScrollTrigger.refresh();
         }
       });
     }
@@ -208,7 +210,7 @@ window.addEventListener('load', () => {
 // Hero animations
 function triggerHeroReveal() {
   const tl = gsap.timeline();
-  
+
   tl.from('.hero-title span', {
     y: 60,
     opacity: 0,
@@ -216,32 +218,32 @@ function triggerHeroReveal() {
     duration: 0.8,
     ease: 'power4.out'
   })
-  .from('.hero-tagline-new', {
-    y: 20,
-    opacity: 0,
-    duration: 0.6,
-    ease: 'power3.out'
-  }, '-=0.3')
-  .from('.hero-description', {
-    y: 30,
-    opacity: 0,
-    duration: 0.8,
-    ease: 'power3.out'
-  }, '-=0.4')
-  .from('.hero-actions .btn', {
-    y: 20,
-    opacity: 0,
-    stagger: 0.1,
-    duration: 0.6,
-    ease: 'power3.out'
-  }, '-=0.6')
-  .from('.profile-card-3d', {
-    z: -300,
-    rotateY: 45,
-    opacity: 0,
-    duration: 1.2,
-    ease: 'power3.out'
-  }, '-=0.8');
+    .from('.hero-tagline-new', {
+      y: 20,
+      opacity: 0,
+      duration: 0.6,
+      ease: 'power3.out'
+    }, '-=0.3')
+    .from('.hero-description', {
+      y: 30,
+      opacity: 0,
+      duration: 0.8,
+      ease: 'power3.out'
+    }, '-=0.4')
+    .from('.hero-actions .btn', {
+      y: 20,
+      opacity: 0,
+      stagger: 0.1,
+      duration: 0.6,
+      ease: 'power3.out'
+    }, '-=0.6')
+    .from('.profile-card-3d', {
+      z: -300,
+      rotateY: 45,
+      opacity: 0,
+      duration: 1.2,
+      ease: 'power3.out'
+    }, '-=0.8');
 }
 
 // Fade in revealing headings
@@ -263,6 +265,20 @@ document.querySelectorAll('.section-header, .services-intro').forEach((header) =
 gsap.from('.capability-card', {
   scrollTrigger: {
     trigger: '.capabilities-grid',
+    start: 'top 80%',
+    toggleActions: 'play none none none'
+  },
+  y: 60,
+  opacity: 0,
+  stagger: 0.15,
+  duration: 0.8,
+  ease: 'power3.out'
+});
+
+// Why Choose Us cards cascade
+gsap.from('.why-card', {
+  scrollTrigger: {
+    trigger: '.why-choose-grid',
     start: 'top 80%',
     toggleActions: 'play none none none'
   },
@@ -325,19 +341,19 @@ function initDraggableProfile(travelingProfile) {
 
   const onPointerDown = (e) => {
     if (e.target.closest('.traveling-btn')) return;
-    
+
     isDragging = true;
     startX = e.clientX;
     startY = e.clientY;
-    
+
     startRect = travelingProfile.getBoundingClientRect();
-    
+
     const designWidth = travelingProfile.offsetWidth || 250;
     currentScale = startRect.width / designWidth;
-    
+
     dragWrapper.setPointerCapture(e.pointerId);
     travelingProfile.classList.add('is-dragging');
-    
+
     if (typeof lenis !== 'undefined' && lenis.stop) {
       lenis.stop();
     }
@@ -345,61 +361,61 @@ function initDraggableProfile(travelingProfile) {
 
   const onPointerMove = (e) => {
     if (!isDragging) return;
-    
+
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
-    
+
     let targetLeft = startRect.left + dx;
     let targetTop = startRect.top + dy;
-    
+
     const minLeft = 10;
     const maxLeft = window.innerWidth - startRect.width - 10;
     const minTop = 80;
     const maxTop = window.innerHeight - startRect.height - 10;
-    
+
     if (targetLeft < minLeft) targetLeft = minLeft;
     if (targetLeft > maxLeft) targetLeft = maxLeft;
     if (targetTop < minTop) targetTop = minTop;
     if (targetTop > maxTop) targetTop = maxTop;
-    
+
     const finalDx = targetLeft - startRect.left;
     const finalDy = targetTop - startRect.top;
-    
+
     const currentTransformX = dragX + finalDx / currentScale;
     const currentTransformY = dragY + finalDy / currentScale;
-    
+
     dragWrapper.style.transform = `translate3d(${currentTransformX}px, ${currentTransformY}px, 0px)`;
   };
 
   const onPointerUp = (e) => {
     if (!isDragging) return;
-    
+
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
-    
+
     let targetLeft = startRect.left + dx;
     let targetTop = startRect.top + dy;
-    
+
     const minLeft = 10;
     const maxLeft = window.innerWidth - startRect.width - 10;
     const minTop = 80;
     const maxTop = window.innerHeight - startRect.height - 10;
-    
+
     if (targetLeft < minLeft) targetLeft = minLeft;
     if (targetLeft > maxLeft) targetLeft = maxLeft;
     if (targetTop < minTop) targetTop = minTop;
     if (targetTop > maxTop) targetTop = maxTop;
-    
+
     const finalDx = targetLeft - startRect.left;
     const finalDy = targetTop - startRect.top;
-    
+
     dragX = dragX + finalDx / currentScale;
     dragY = dragY + finalDy / currentScale;
-    
+
     isDragging = false;
     dragWrapper.releasePointerCapture(e.pointerId);
     travelingProfile.classList.remove('is-dragging');
-    
+
     if (typeof lenis !== 'undefined' && lenis.start) {
       lenis.start();
     }
@@ -426,13 +442,13 @@ if (travelingProfile) {
   // Desktop media query (min-width: 1025px)
   mm.add("(min-width: 1025px)", () => {
     gsap.set(travelingProfile, { display: 'flex', opacity: 1 });
-    
+
     const staticHeroCard = document.querySelector('.hero-visual .profile-card-3d');
     if (staticHeroCard) {
       staticHeroCard.style.opacity = '0';
       staticHeroCard.style.pointerEvents = 'none';
     }
-    
+
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: 'body',
@@ -441,7 +457,7 @@ if (travelingProfile) {
         scrub: 2.8,
       }
     });
-    
+
     tl.fromTo(travelingProfile, {
       left: '65%',
       top: '25%',
@@ -458,24 +474,24 @@ if (travelingProfile) {
       rotateZ: -2,
       duration: 1,
     })
-    .to(travelingProfile, {
-      left: '75%',
-      top: '35%',
-      xPercent: 0,
-      scale: 0.72,
-      rotateY: 24,
-      rotateZ: 2,
-      duration: 1,
-    })
-    .to(travelingProfile, {
-      left: '8%',
-      top: '52%',
-      xPercent: 0,
-      scale: 0.82,
-      rotateY: 0,
-      rotateZ: 0,
-      duration: 1,
-    });
+      .to(travelingProfile, {
+        left: '75%',
+        top: '35%',
+        xPercent: 0,
+        scale: 0.72,
+        rotateY: 24,
+        rotateZ: 2,
+        duration: 1,
+      })
+      .to(travelingProfile, {
+        left: '8%',
+        top: '52%',
+        xPercent: 0,
+        scale: 0.82,
+        rotateY: 0,
+        rotateZ: 0,
+        duration: 1,
+      });
 
     if (travelingBtn) {
       ScrollTrigger.create({
@@ -489,66 +505,12 @@ if (travelingProfile) {
 
   // Mobile/Tablet media query (max-width: 1024px)
   mm.add("(max-width: 1024px)", () => {
-    gsap.set(travelingProfile, { display: 'flex', opacity: 1 });
-    
+    gsap.set(travelingProfile, { display: 'none' });
+
     const staticHeroCard = document.querySelector('.hero-visual .profile-card-3d');
     if (staticHeroCard) {
-      staticHeroCard.style.opacity = '0';
-      staticHeroCard.style.pointerEvents = 'none';
-    }
-    
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: 'body',
-        start: 'top top',
-        end: 'bottom bottom',
-        scrub: 2.2,
-      }
-    });
-    
-    // Bottom-anchored floating bubble path on mobile/tablet screens
-    tl.fromTo(travelingProfile, {
-      left: '50%',
-      top: '22%',
-      xPercent: -50,
-      scale: 1,
-      rotateY: 0,
-      rotateZ: 0,
-    }, {
-      left: '60%',
-      top: '75%',
-      xPercent: 0,
-      scale: 0.85,
-      rotateY: -15,
-      rotateZ: -1,
-      duration: 1,
-    })
-    .to(travelingProfile, {
-      left: '5%',
-      top: '75%',
-      xPercent: 0,
-      scale: 0.85,
-      rotateY: 15,
-      rotateZ: 1,
-      duration: 1,
-    })
-    .to(travelingProfile, {
-      left: '8%',
-      top: '78%',
-      xPercent: 0,
-      scale: 0.9,
-      rotateY: 0,
-      rotateZ: 0,
-      duration: 1,
-    });
-
-    if (travelingBtn) {
-      ScrollTrigger.create({
-        trigger: '#home',
-        start: 'bottom 80%',
-        onEnter: () => travelingBtn.classList.add('visible'),
-        onLeaveBack: () => travelingBtn.classList.remove('visible'),
-      });
+      staticHeroCard.style.opacity = '1';
+      staticHeroCard.style.pointerEvents = 'auto';
     }
   });
 }
@@ -565,7 +527,7 @@ if (hamburgerToggle && navDrawer) {
     const isActive = hamburgerToggle.classList.toggle('active');
     navDrawer.classList.toggle('active');
     document.body.classList.toggle('menu-open');
-    
+
     if (isActive) {
       if (typeof lenis !== 'undefined' && lenis.stop) lenis.stop();
     } else {
@@ -607,14 +569,14 @@ const formStatus = document.getElementById('form-status');
 if (contactForm) {
   contactForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    
+
     const submitBtn = contactForm.querySelector('button[type="submit"]');
     const originalBtnHTML = submitBtn.innerHTML;
-    
+
     // Sending animation feedback
     submitBtn.disabled = true;
     submitBtn.innerHTML = `Sending Proposal <svg class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>`;
-    
+
     // Add simple inline spinner style
     const style = document.createElement('style');
     style.innerHTML = `
@@ -634,14 +596,14 @@ if (contactForm) {
     setTimeout(() => {
       submitBtn.disabled = false;
       submitBtn.innerHTML = originalBtnHTML;
-      
+
       // Success feedback
       formStatus.className = 'form-status success';
       formStatus.innerText = 'Thank you! Your message has been sent successfully. Vishnu will contact you shortly.';
-      
+
       // Clear inputs
       contactForm.reset();
-      
+
       // Auto fade message after 6 seconds
       setTimeout(() => {
         gsap.to(formStatus, {
@@ -653,7 +615,7 @@ if (contactForm) {
           }
         });
       }, 6000);
-      
+
     }, 1500);
   });
 }
