@@ -236,34 +236,8 @@ function triggerHeroReveal() {
       stagger: 0.1,
       duration: 0.6,
       ease: 'power3.out'
-    }, '-=0.6')
-    .from('.profile-card-3d', {
-      z: -300,
-      rotateY: 45,
-      opacity: 0,
-      duration: 1.2,
-      ease: 'power3.out'
-    }, '-=0.8')
-    .from('.hero-profile-name-under', {
-      y: 20,
-      opacity: 0,
-      duration: 0.8,
-      ease: 'power3.out'
     }, '-=0.6');
 }
-
-// Fade out the profile name under the photo as user scrolls
-gsap.to('.hero-profile-name-under', {
-  scrollTrigger: {
-    trigger: '#home',
-    start: 'top top',
-    end: 'bottom 45%',
-    scrub: true,
-  },
-  opacity: 0,
-  y: -20,
-  ease: 'none'
-});
 
 // Fade in revealing headings
 document.querySelectorAll('.section-header, .services-intro').forEach((header) => {

@@ -319,15 +319,18 @@ nav a.active {
 
 .hero-grid {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
+  grid-template-columns: 1fr;
+  text-align: center;
   gap: 40px;
   align-items: center;
+  justify-content: center;
 }
 
 .hero-content {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  margin: 0 auto;
   z-index: 10;
 }
 
@@ -1443,6 +1446,7 @@ body.menu-open {
 .hero-stats {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 48px;
   margin-bottom: 32px;
 }
